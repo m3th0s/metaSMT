@@ -15,7 +15,7 @@ void server(boost::asio::io_service& io_service)
   {
     socket_ptr sock(new tcp::socket(io_service));
     acceptor.accept(*sock);
-    boost::thread t(boost::bind(new_connection, sock));
+    boost::thread t(boost::bind(Connection::new_connection, sock));
   }
 }
 
