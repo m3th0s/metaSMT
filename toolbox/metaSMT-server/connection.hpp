@@ -215,6 +215,7 @@ public:
 
     ConnectionBase* cb;
     int m_solver_type;
+    pid_t pid;
 private:
     int fd_p2c[2];
     int fd_c2p[2];

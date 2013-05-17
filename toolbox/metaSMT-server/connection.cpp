@@ -133,6 +133,7 @@ void new_connection(socket_ptr socket)
                 return;
             } else if (pid) {
                 //PARENT PROCESS
+                (*i)->pid = pid;
             } else {
                 //CHILD PROCESS
                 switch ((*i)->m_solver_type) {
