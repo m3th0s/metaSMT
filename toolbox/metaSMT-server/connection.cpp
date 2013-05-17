@@ -1,5 +1,8 @@
 #include "connection.hpp"
 
+#include <signal.h>
+#include <sys/wait.h>
+
 #include <list>
 
 #include <boost/thread/thread.hpp>
@@ -154,6 +157,15 @@ void new_connection(socket_ptr socket)
         }
 
         while (true) {
+            if (str == "exit") {
+                for (std::list<SolverProcess*>::iterator i = solvers.begin(); i != solvers.end(); i++) {
+                    kill((*i)->pid, SIGTERM);
+                    std::cout << "fuu" << std::endl;
+                    waitpid((*i)->pid, 0, 0);
+                }
+                return;
+            }
+
             for (std::list<SolverProcess*>::iterator i = solvers.begin(); i != solvers.end(); i++) {
                 (*i)->parent_write_command(str);
             }
