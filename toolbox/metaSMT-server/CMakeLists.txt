@@ -80,4 +80,4 @@ add_tool_executable( metaSMT-server
     boost_thread
 )
 
-add_precompiled_header(metaSMT-server connection.hpp connection.cpp main.cpp)
+add_precompiled_header(metaSMT-server solver.hpp solver.cpp main.cpp)
