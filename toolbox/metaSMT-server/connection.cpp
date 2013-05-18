@@ -30,9 +30,12 @@ void Connection::write(std::string string)
     boost::asio::write(*socket, boost::asio::buffer(string, string.size()));
 }
 
-void terminate_solvers()
+void Connection::terminateSolver(SolverProcess* solver)
 {
-    
+    kill(solver->pid, SIGTERM);
+    int status;
+    waitpid(solver->pid, &status, 0);
+    delete solver;
 }
 
 void Connection::new_connection(socket_ptr socket)
@@ -44,6 +47,8 @@ void Connection::new_connection(socket_ptr socket)
 Connection::Connection(socket_ptr socket) :
     socket(socket)
 {
+    std::string exit_reason;
+
     try {
         std::string availableSolvers = "0 z3; 1 picosat; 2 boolector";
         write(availableSolvers);
@@ -108,12 +113,8 @@ Connection::Connection(socket_ptr socket) :
 
         while (true) {
             if (str == "exit") {
-                for (std::list<SolverProcess*>::iterator i = solvers.begin(); i != solvers.end(); i++) {
-                    kill((*i)->pid, SIGTERM);
-                    std::cout << "fuu" << std::endl;
-                    waitpid((*i)->pid, 0, 0);
-                }
-                return;
+                exit_reason = "requested by client";
+                break;
             }
 
             for (std::list<SolverProcess*>::iterator i = solvers.begin(); i != solvers.end(); i++) {
@@ -139,8 +140,15 @@ Connection::Connection(socket_ptr socket) :
             str = next_line();
         }
     } catch (std::exception& e) {
-        std::cout << "Closing connection: " << e.what() << std::endl;
-        socket->close();
-        return;
+        exit_reason = e.what();
     }
+
+    std::cout << "Closing connection: " << exit_reason << std::endl;
+
+    for (std::list<SolverProcess*>::iterator i = solvers.begin(); i != solvers.end(); i++) {
+        terminateSolver(*i);
+    }
+
+    socket->close();
+    return;
 }

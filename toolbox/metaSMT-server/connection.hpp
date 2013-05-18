@@ -21,6 +21,7 @@ private:
     boost::asio::streambuf buffer;
     void write(std::string string);
 
+    void terminateSolver(SolverProcess* solver);
     std::list<SolverProcess*> solvers;
 };
 
