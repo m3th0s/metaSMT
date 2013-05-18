@@ -27,6 +27,7 @@ bool is_binary(const boost::property_tree::ptree& pt)
 SolverProcess::SolverProcess(int solver_type)
 {
     m_solver_type = solver_type;
+    sb = 0;
 }
 
 int SolverProcess::initPipes()
@@ -94,4 +95,9 @@ void SolverProcess::write_command(int fd, std::string s)
 {
     s += "\n";
     write(fd, s.c_str(), s.length());
+}
+
+SolverProcess::~SolverProcess()
+{
+    delete sb;
 }

@@ -202,6 +202,7 @@ class SolverProcess
 {
 public:
     SolverProcess(int solver_type);
+    ~SolverProcess();
     int initPipes();
 
     std::string child_read_command();
@@ -228,6 +229,7 @@ class SolverBase
 {
 public:
     virtual void start() = 0;
+    virtual ~SolverBase() {};
 // protected:
     SolverProcess* sp;
 };
