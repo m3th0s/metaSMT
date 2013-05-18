@@ -64,13 +64,18 @@ Connection::Connection(socket_ptr socket) :
             try {
                 solver = boost::lexical_cast<unsigned>(str);
             } catch (boost::bad_lexical_cast e) {
-                break;
+                if (!solvers.empty()) {
+                    break;
+                }
             }
 
-            if (0 <= solver && solver <= 2)
+            if (0 <= solver && solver <= 2) {
                 solvers.push_back(new SolverProcess(solver));
-            else
+            } else if (solvers.empty()) {
+                ret = "FAIL choose at least one solver";
+            } else {
                 ret = "FAIL unsupported solver";
+            }
 
             write(ret);
         }
