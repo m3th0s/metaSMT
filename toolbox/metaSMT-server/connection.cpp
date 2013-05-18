@@ -91,17 +91,17 @@ Connection::Connection(socket_ptr socket) :
                 //CHILD PROCESS
                 switch ((*i)->m_solver_type) {
                 case 0:
-                    (*i)->cb = new Solver<metaSMT::solver::Z3_Backend>();
+                    (*i)->sb = new Solver<metaSMT::solver::Z3_Backend>();
                     break;
                 case 1:
-                    (*i)->cb = new Solver<metaSMT::BitBlast<metaSMT::SAT_Clause<metaSMT::solver::PicoSAT> > >();
+                    (*i)->sb = new Solver<metaSMT::BitBlast<metaSMT::SAT_Clause<metaSMT::solver::PicoSAT> > >();
                     break;
                 case 2:
-                    (*i)->cb = new Solver<metaSMT::solver::Boolector>();
+                    (*i)->sb = new Solver<metaSMT::solver::Boolector>();
                 }
 
-                (*i)->cb->sp = (*i);
-                (*i)->cb->start();
+                (*i)->sb->sp = (*i);
+                (*i)->sb->start();
                 return;
             }
         }

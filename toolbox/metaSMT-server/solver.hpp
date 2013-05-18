@@ -209,7 +209,7 @@ public:
     std::string parent_read_command();
     void parent_write_command(std::string s);
 
-    SolverBase* cb;
+    SolverBase* sb;
     int m_solver_type;
     pid_t pid;
 private:
