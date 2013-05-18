@@ -1,8 +1,6 @@
 #ifndef CONNECTION_HPP
 #define CONNECTION_HPP
 
-#include <boost/asio/ip/tcp.hpp>
-
 #include <boost/smart_ptr.hpp>
 
 #include <list>
