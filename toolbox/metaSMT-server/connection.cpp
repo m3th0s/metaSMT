@@ -4,11 +4,15 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
+#include <boost/assign.hpp>
+
 #include <metaSMT/BitBlast.hpp>
 #include <metaSMT/backend/Boolector.hpp>
 #include <metaSMT/backend/SAT_Clause.hpp>
 #include <metaSMT/backend/PicoSAT.hpp>
 #include <metaSMT/backend/Z3_Backend.hpp>
+
+static const std::vector<std::string> solverTypes = boost::assign::list_of("z3")("picosat")("boolector");
 
 std::string Connection::next_line()
 {
@@ -51,7 +55,10 @@ Connection::Connection(socket_ptr socket) :
     std::string exit_reason;
 
     try {
-        std::string availableSolvers = "0 z3; 1 picosat; 2 boolector";
+        std::string availableSolvers;
+        for (int n = 0; n < solverTypes.size(); ++n) {
+            availableSolvers += boost::lexical_cast<std::string>(n) + ' ' + solverTypes[n] + ';';
+        }
         write(availableSolvers);
 
         std::string str;
@@ -70,7 +77,7 @@ Connection::Connection(socket_ptr socket) :
                 }
             }
 
-            if (0 <= solver && solver <= 2) {
+            if (0 <= solver && solver < solverTypes.size()) {
                 solvers.push_back(new SolverProcess(solver));
             } else if (str == "exit") {
                 break;
@@ -111,6 +118,9 @@ Connection::Connection(socket_ptr socket) :
                     break;
                 case 2:
                     (*i)->sb = new Solver<metaSMT::solver::Boolector>();
+                    break;
+                default:
+                    throw("Solver in not implemented");
                 }
 
                 (*i)->sb->sp = (*i);
@@ -135,7 +145,7 @@ Connection::Connection(socket_ptr socket) :
                 while (!solved) {
                     for (std::list<SolverProcess*>::iterator i = solvers.begin(); i != solvers.end(); ++i) {
                         if ((*i)->parent_read_command_available()) {
-                            ret = (*i)->parent_read_command();
+                            ret = (*i)->parent_read_command() += ' ' + solverTypes[(*i)->m_solver_type];
 
                             //terminate all but the fastest solver
                             SolverProcess* p = *i;
