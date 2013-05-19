@@ -72,6 +72,8 @@ Connection::Connection(socket_ptr socket) :
 
             if (0 <= solver && solver <= 2) {
                 solvers.push_back(new SolverProcess(solver));
+            } else if (str == "exit") {
+                break;
             } else if (solvers.empty()) {
                 ret = "FAIL choose at least one solver";
             } else {
