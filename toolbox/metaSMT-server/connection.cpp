@@ -1,6 +1,7 @@
 #include "connection.hpp"
 
 #include <signal.h>
+#include <unistd.h>
 #include <sys/wait.h>
 
 #include <metaSMT/BitBlast.hpp>
@@ -126,18 +127,42 @@ Connection::Connection(socket_ptr socket) :
                 (*i)->parent_write_command(str);
             }
 
-            std::vector<std::string> answers(solvers.size());
-            int n = 0;
-            for (std::list<SolverProcess*>::iterator i = solvers.begin(); i != solvers.end(); i++) {
-                answers[n++] = (*i)->parent_read_command();
-            }
+            if (str == "solve") {
+                bool solved = false;
+                while (!solved) {
+                    for (std::list<SolverProcess*>::iterator i = solvers.begin(); i != solvers.end(); ++i) {
+                        if ((*i)->parent_read_command_available()) {
+                            ret = (*i)->parent_read_command();
 
-            //return a FAIL if not all answers are the same, otherwise return the consistent answer
-            ret = answers[0];
-            for (int n = 0; n < answers.size() -1; n++) {
-                if (answers[n] != answers[n+1]) {
-                    ret = "FAIL inconsistent solver behavior";
-                    break;
+                            //terminate all but the fastest solver
+                            SolverProcess* p = *i;
+                            for (std::list<SolverProcess*>::iterator it = solvers.begin(); it != solvers.end(); ++it) {
+                                if (*it != p)
+                                    terminateSolver(*it);
+                            }
+                            solvers.clear();
+                            solvers.push_back(p);
+
+                            solved = true;
+                            break;
+                        }
+                    }
+                    usleep(100);
+                }
+            } else {
+                std::vector<std::string> answers(solvers.size());
+                int n = 0;
+                for (std::list<SolverProcess*>::iterator i = solvers.begin(); i != solvers.end(); ++i, ++n) {
+                    answers[n] = (*i)->parent_read_command();
+                }
+
+                //return a FAIL if not all answers are the same, otherwise return the consistent answer
+                ret = answers[0];
+                for (int n = 0; n < answers.size() -1; n++) {
+                    if (answers[n] != answers[n+1]) {
+                        ret = "FAIL inconsistent solver behavior";
+                        break;
+                    }
                 }
             }
 

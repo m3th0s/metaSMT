@@ -208,6 +208,7 @@ public:
     std::string child_read_command();
     void child_write_command(std::string s);
 
+    bool parent_read_command_available();
     std::string parent_read_command();
     void parent_write_command(std::string s);
 
@@ -218,7 +219,6 @@ private:
     int fd_p2c[2];
     int fd_c2p[2];
 
-    bool parent_read_command_available();
     std::string p2c_read_command;
 
     std::string read_command(int fd);
