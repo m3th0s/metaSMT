@@ -1,4 +1,3 @@
 TODO
 
-- add: only wait for answer of the fastest solver after receiving the command "solve"
-- sicherstellen, dass jeder solver pro connection nur einmal ausgeführt wird
+- return cpu time after a call to "solve"
