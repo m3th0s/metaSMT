@@ -83,7 +83,7 @@ Connection::Connection(socket_ptr socket) :
             write(ret);
         }
 
-        //receive commands
+        //create solvers
         for (std::list<SolverProcess*>::iterator i = solvers.begin(); i != solvers.end(); i++) {
             if (!(*i)->initPipes()) {
                 ret = "Could not create pipe for IPC";
@@ -119,6 +119,7 @@ Connection::Connection(socket_ptr socket) :
             }
         }
 
+        //main loop
         while (true) {
             if (str == "exit") {
                 exit_reason = "requested by client";
