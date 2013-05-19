@@ -86,14 +86,14 @@ Connection::Connection(socket_ptr socket) :
         //receive commands
         for (std::list<SolverProcess*>::iterator i = solvers.begin(); i != solvers.end(); i++) {
             if (!(*i)->initPipes()) {
-                ret = "Could not create pipe for IPC.";
+                ret = "Could not create pipe for IPC";
                 std::cout << ret << std::endl;
                 write(ret);
                 return;
             }
             pid_t pid = fork();
             if (pid == -1) {
-                ret = "Could not fork new process.";
+                ret = "Could not fork new process";
                 std::cout << ret << std::endl;
                 write(ret);
                 return;
@@ -182,5 +182,4 @@ Connection::Connection(socket_ptr socket) :
     }
 
     socket->close();
-    return;
 }
