@@ -93,7 +93,7 @@ std::string SolverProcess::read_command(int fd)
 
 void SolverProcess::write_command(int fd, std::string s)
 {
-    s += "\n";
+    s += '\n';
     write(fd, s.c_str(), s.length());
 }
 
