@@ -3,10 +3,13 @@
 
 #include <map>
 
+#include <metaSMT/support/default_visitation_unrolling_limit.hpp>
+#include <metaSMT/DirectSolver_Context.hpp>
+#include <metaSMT/support/parser/UTreeEvaluator.hpp>
+#include <metaSMT/support/parser/SMT2Parser.hpp>
+
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
-
-#include <metaSMT/DirectSolver_Context.hpp>
 
 #include <sstream>
 #include <string>
@@ -237,6 +240,12 @@ public:
 template<typename Context> class Solver : public SolverBase
 {
 public:
+
+    Solver() :
+        evaluator(solver),
+        parser(evaluator)
+    {}
+
     void start()
     {
         for (;;)
@@ -335,6 +344,9 @@ public:
     }
 private:
     metaSMT::DirectSolver_Context<Context> solver;
+    metaSMT::evaluator::UTreeEvaluator<Context> evaluator;
+    metaSMT::smt2::SMT2Parser<metaSMT::evaluator::UTreeEvaluator<Context> > parser;
+
     std::map<std::string, metaSMT::logic::predicate> predicates;
     std::map<std::string, metaSMT::logic::QF_BV::bitvector> bitvectors;
 };
