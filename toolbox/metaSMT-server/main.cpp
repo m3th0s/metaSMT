@@ -9,7 +9,10 @@ using boost::asio::ip::tcp;
 
 void server(boost::asio::io_service& io_service)
 {
-  tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), 1313));
+  int port = 1313;
+  tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), port));
+  std::cout << "metaSMT-server started" << std::endl;
+  std::cout << "Listening on port " << port << std::endl;
 
   for (;;)
   {
