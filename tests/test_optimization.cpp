@@ -1,12 +1,8 @@
 #include <boost/test/unit_test.hpp>
-#include <metaSMT/support/cardinality.hpp>
 #include <metaSMT/support/optimization.hpp>
-
-#include <vector>
-#include <metaSMT/support/cardinality.hpp>
 #include <metaSMT/frontend/Logic.hpp>
-
 #include <boost/assign/std/vector.hpp>
+#include <vector>
 
 using namespace std;
 using namespace metaSMT;
@@ -31,7 +27,7 @@ void minimize_all( std::string const optimize_with, std::string const constrain_
     for ( unsigned value = 1; value <= num_vars; ++value ) {
       std::cerr << "#VAR = " << num_vars << " MIN = " << value << '\n';
       push(ctx);
-      assertion( ctx, evaluate(ctx,
+      metaSMT::assertion( ctx, evaluate(ctx,
         cardinality::cardinality(cardinality::tag::geq_tag(), p, value, constrain_with))
       );
       unsigned const min = optimization::minimize(ctx, p);
@@ -64,7 +60,7 @@ void maximize_all( std::string const optimize_with, std::string const constrain_
     for ( unsigned value = 1; value <= num_vars; ++value ) {
       std::cerr << "#VAR = " << num_vars << " MAX = " << value << '\n';
       push(ctx);
-      assertion( ctx, evaluate(ctx,
+      metaSMT::assertion( ctx, evaluate(ctx,
         cardinality::cardinality(cardinality::tag::leq_tag(), p, value, constrain_with))
       );
       unsigned const max = optimization::maximize(ctx, p);
