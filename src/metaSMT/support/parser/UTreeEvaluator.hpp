@@ -364,7 +364,8 @@ struct UTreeEvaluator
     return r;
   }
 
-  void evaluateInstance(utree ast) {
+std::string evaluateInstance(utree ast) {
+    std::stringstream ret;
     for (utree::iterator I = ast.begin(); I != ast.end(); ++I) {
       utree command = *I;
       utree::iterator commandIterator = command.begin();
@@ -382,8 +383,10 @@ struct UTreeEvaluator
       case checksat: {
         if (solve(ctx)) {
           std::cout << "sat" << std::endl;
+          ret << "sat" << std::endl;
         } else {
           std::cout << "unsat" << std::endl;
+          ret << "unsat" << std::endl;
         }
         break;
       }
@@ -411,22 +414,27 @@ struct UTreeEvaluator
           if ( (*var)->isBool() ) {
             bool b = read_value(ctx, (*var)->eval(ctx));
             std::cout << "((" << value << " " << (b ? "true" : "false") << "))" << '\n';
+            ret << "((" << value << " " << (b ? "true" : "false") << "))" << '\n';
           }
           else if ( (*var)->isBitVector() ) {
             std::cout << "((" << value << " #b" << read_value(ctx, (*var)->eval(ctx)) << "))" << '\n';
+            ret << "((" << value << " #b" << read_value(ctx, (*var)->eval(ctx)) << "))" << '\n';
           }
           else {
-            assert( false && "Variable type is not supported" );
+            std::cerr << "ERROR: Variable type is not supported" << std::endl;
+            ret << "ERROR: Variable type is not supported" << std::endl;
           }
         }
         else {
           // std::cerr << "[DBG] Variable: " << value << '\n';
-          assert( false && "Could not determine variable ");
+          std::cerr << "ERROR: Could not determine variable " << std::endl;
+          ret << "ERROR: Could not determine variable " << std::endl;
         }
         break;
       }
       case undefined:
         std::cerr << "Error could not determine Symbol: " << symbolString << std::endl;
+        ret << "Error could not determine Symbol: " << symbolString << std::endl;
         break;
       case setoption:
       case getoption:
@@ -436,6 +444,7 @@ struct UTreeEvaluator
         break;
       }
     }
+    return ret.str();
   }
 
   result_type translateLogicalInstruction(utree tree) {
