@@ -248,104 +248,27 @@ public:
 
     void start()
     {
-        for (;;)
-        {
-            std::string ret;
-            try
-            {
-                std::string s = sp->child_read_command();
+        std::string ret;
+        std::stringstream buf;
+        while (true) {
+                ret = "OK";
+                std::string line = sp->child_read_command();
+                buf << line << std::endl;
 
-                if (boost::starts_with(s, "new_variable"))
-                {
-                    std::vector<std::string> split;
-                    boost::split(split, s, boost::algorithm::is_any_of(" "));
+                size_t found = line.find("(get-value");
+                if(line.compare("(check-sat)") == 0 || found != line.npos){
+                    boost::spirit::utree::list_type ast;
+                    parser.parse(buf, ast);
 
-                    if (split.size() != 2u) {
-                        ret = "FAIL Not enough arguments";
-                    } else {
-                        predicates.insert(std::make_pair(split[1], metaSMT::logic::new_variable()));
-                        std::cout << "[INFO] Added predicate " << split[1] << std::endl;
-                        ret = "OK";
-                    }
+                    ret = evaluator.evaluateInstance(ast);
                 }
-                else if (boost::starts_with(s, "new_bitvector"))
-                {
-                    std::vector<std::string> split;
-                    boost::split(split, s, boost::algorithm::is_any_of(" "));
-
-                    if (split.size() != 3u) {
-                        ret = "FAIL Not enough arguments";
-                    } else {
-                        bitvectors.insert(std::make_pair(split[1], metaSMT::logic::QF_BV::new_bitvector(boost::lexical_cast<unsigned>(split[2]))));
-                        std::cout << "[INFO] Added bit-vector " << split[1] << " of size " << split[2] << std::endl;
-                        ret = "OK";
-                    }
-                }
-                else if (boost::starts_with(s, "assertion"))
-                {
-//                     std::cout << s.substr(10u) << std::endl;
-
-                    // trim s such that it only contains the json string
-                    boost::property_tree::ptree pt;
-
-                    std::istringstream in(s.substr(10u));
-                    boost::property_tree::json_parser::read_json(in, pt);
-
-                    assertion(solver, create_assertion(solver, predicates, bitvectors, pt));
-                    std::cout << "[INFO] Added assertion" << std::endl;
-
-                    ret = "OK";
-                }
-                else if (boost::starts_with(s, "solve"))
-                {
-                    bool result = solve(solver);
-                    ret = result ? "SAT" : "UNSAT";
-                    std::cout << "[INFO] Tried to solve: " << ret << std::endl;
-                }
-                else if (boost::starts_with(s, "modelvalue"))
-                {
-                    std::vector<std::string> split;
-                    boost::split(split, s, boost::algorithm::is_any_of(" "));
-
-                    if (split.size() != 2u) {
-                        ret = "FAIL Not enough arguments";
-                    } else {
-                        const std::string& name = split.at(1u);
-                        std::map<std::string, metaSMT::logic::predicate>::const_iterator itp = predicates.find(name);
-                        if (itp != predicates.end()) {
-                            ret = boost::lexical_cast<std::string>(read_value(solver, itp->second));
-                            std::cout << "[INFO] Returned modelvalue for predicate " << name << ": " << ret << std::endl;
-                        } else {
-                            std::map<std::string, metaSMT::logic::QF_BV::bitvector>::const_iterator itb = bitvectors.find(name);
-                            if (itb != bitvectors.end()) {
-                                ret = boost::lexical_cast<std::string>(read_value(solver, itb->second));
-                                std::cout << "[INFO] Returned modelvalue for bitvector " << name << ": " << ret << std::endl;
-                            } else {
-                                ret = "FAIL Undefined variable: " + name;
-                            }
-                        }
-                    }
-                } else {
-                    throw UnsupportedCommandException(s);
-                }
-            } catch (UnsupportedOperatorException& e) {
-                ret = "FAIL Unsupported operator: " + std::string(e.what());
-                std::cout << ret << std::endl;
-            } catch (UnsupportedCommandException& e) {
-                ret = "FAIL Unsupported command: " + std::string(e.what());
-                std::cout << ret << std::endl;
-            } catch (UndefinedVariableException& e) {
-                ret = "FAIL Undefined variable: " + std::string(e.what());
-                std::cout << ret << std::endl;
-            }
-
-            sp->child_write_command(ret);
+                sp->child_write_command(ret);
         }
     }
 private:
     metaSMT::DirectSolver_Context<Context> solver;
-    metaSMT::evaluator::UTreeEvaluator<Context> evaluator;
-    metaSMT::smt2::SMT2Parser<metaSMT::evaluator::UTreeEvaluator<Context> > parser;
+    metaSMT::evaluator::UTreeEvaluator<metaSMT::DirectSolver_Context<Context> > evaluator;
+    metaSMT::smt2::SMT2Parser<metaSMT::evaluator::UTreeEvaluator<metaSMT::DirectSolver_Context<Context> > > parser;
 
     std::map<std::string, metaSMT::logic::predicate> predicates;
     std::map<std::string, metaSMT::logic::QF_BV::bitvector> bitvectors;

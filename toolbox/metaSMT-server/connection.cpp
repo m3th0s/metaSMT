@@ -6,6 +6,7 @@
 
 #include <boost/assign.hpp>
 
+#include <metaSMT/API/Group.hpp>
 #include <metaSMT/BitBlast.hpp>
 #include <metaSMT/backend/Boolector.hpp>
 #include <metaSMT/backend/SAT_Clause.hpp>
@@ -45,7 +46,6 @@ void Connection::terminateSolver(SolverProcess* solver)
 
 void Connection::new_connection(socket_ptr socket)
 {
-    std::cout << "New connection" << std::endl;
     Connection c(socket);
 }
 
@@ -107,6 +107,7 @@ Connection::Connection(socket_ptr socket) :
             } else if (pid) {
                 //PARENT PROCESS
                 (*i)->pid = pid;
+                std::cout << "New connection (" << pid << ')' << std::endl;
             } else {
                 //CHILD PROCESS
                 switch ((*i)->m_solver_type) {
@@ -114,10 +115,10 @@ Connection::Connection(socket_ptr socket) :
                     (*i)->sb = new Solver<metaSMT::solver::Z3_Backend>();
                     break;
                 case 1:
-                    (*i)->sb = new Solver<metaSMT::BitBlast<metaSMT::SAT_Clause<metaSMT::solver::PicoSAT> > >();
+                    (*i)->sb = new Solver<metaSMT::Group<metaSMT::BitBlast<metaSMT::SAT_Clause<metaSMT::Stack<metaSMT::solver::PicoSAT> > > > >();
                     break;
                 case 2:
-                    (*i)->sb = new Solver<metaSMT::solver::Boolector>();
+                    (*i)->sb = new Solver<metaSMT::Stack<metaSMT::solver::Boolector> >();
                     break;
                 default:
                     throw("Solver in not implemented");
