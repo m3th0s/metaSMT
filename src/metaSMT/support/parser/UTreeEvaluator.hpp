@@ -364,13 +364,14 @@ struct UTreeEvaluator
     return r;
   }
 
-std::string evaluateInstance(utree ast) {
-    std::stringstream ret;
+std::list<std::string> evaluateInstance(utree ast) {
+    std::list<std::string> ret;
     for (utree::iterator I = ast.begin(); I != ast.end(); ++I) {
       utree command = *I;
       utree::iterator commandIterator = command.begin();
       utree symbol = *commandIterator;
       std::string const symbolString = utreeToString(symbol);
+      std::stringstream s;
 
       switch (symbolMap[symbolString]) {
       case push: {
@@ -383,10 +384,10 @@ std::string evaluateInstance(utree ast) {
       case checksat: {
         if (solve(ctx)) {
           std::cout << "sat" << std::endl;
-          ret << "sat" << std::endl;
+          ret.push_back("sat");
         } else {
           std::cout << "unsat" << std::endl;
-          ret << "unsat" << std::endl;
+          ret.push_back("unsat");
         }
         break;
       }
@@ -413,28 +414,34 @@ std::string evaluateInstance(utree ast) {
         if ( var ) {
           if ( (*var)->isBool() ) {
             bool b = read_value(ctx, (*var)->eval(ctx));
-            std::cout << "((" << value << " " << (b ? "true" : "false") << "))" << '\n';
-            ret << "((" << value << " " << (b ? "true" : "false") << "))" << '\n';
+
+            s << "((" << value << " " << (b ? "true" : "false") << "))";
+            std::cout << s << '\n';
+            ret.push_back(s.str());
           }
           else if ( (*var)->isBitVector() ) {
-            std::cout << "((" << value << " #b" << read_value(ctx, (*var)->eval(ctx)) << "))" << '\n';
-            ret << "((" << value << " #b" << read_value(ctx, (*var)->eval(ctx)) << "))" << '\n';
+            s << "((" << value << " #b" << read_value(ctx, (*var)->eval(ctx)) << "))";
+            std::cout << s << '\n';
+            ret.push_back(s.str());
           }
           else {
-            std::cerr << "ERROR: Variable type is not supported" << std::endl;
-            ret << "ERROR: Variable type is not supported" << std::endl;
+            std::string s("ERROR: Variable type is not supported");
+            std::cerr << s << std::endl;
+            ret.push_back(s);
           }
         }
         else {
           // std::cerr << "[DBG] Variable: " << value << '\n';
-          std::cerr << "ERROR: Could not determine variable " << std::endl;
-          ret << "ERROR: Could not determine variable " << std::endl;
+          std::string s("ERROR: Could not determine variable ");
+          std::cerr << s << std::endl;
+          ret.push_back(s);
         }
         break;
       }
       case undefined:
-        std::cerr << "Error could not determine Symbol: " << symbolString << std::endl;
-        ret << "Error could not determine Symbol: " << symbolString << std::endl;
+        s << "Error could not determine Symbol: " << symbolString;
+        std::cerr << s << std::endl;
+        ret.push_back(s.str());
         break;
       case setoption:
       case getoption:
@@ -444,7 +451,7 @@ std::string evaluateInstance(utree ast) {
         break;
       }
     }
-    return ret.str();
+    return ret;
   }
 
   result_type translateLogicalInstruction(utree tree) {

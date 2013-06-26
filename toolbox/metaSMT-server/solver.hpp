@@ -76,10 +76,11 @@ public:
 
     void start()
     {
-        std::string ret;
+        std::list<std::string> ret;
+        ret.push_back("OK");
+
         std::stringstream buf;
         while (true) {
-                ret = "OK";
                 std::string line = sp->child_read_command();
                 buf << line << std::endl;
 
@@ -89,8 +90,12 @@ public:
                     parser.parse(buf, ast);
 
                     ret = evaluator.evaluateInstance(ast);
+                    if (ret.size() == 0) {
+                        std::cout << "FAIL empty response" << std::endl;
+                        ret.push_back("FAIL empty response");
+                    }
                 }
-                sp->child_write_command(ret);
+                sp->child_write_command(ret.back());
         }
     }
 private:
