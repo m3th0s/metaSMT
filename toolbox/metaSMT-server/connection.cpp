@@ -79,7 +79,7 @@ Connection::Connection(socket_ptr socket) :
 
             if (0 <= solver && solver < solverTypes.size()) {
                 solvers.push_back(new SolverProcess(solver));
-            } else if (str == "exit") {
+            } else if (str == "(exit)") {
                 break;
             } else if (solvers.empty()) {
                 ret = "FAIL choose at least one solver";
@@ -132,7 +132,7 @@ Connection::Connection(socket_ptr socket) :
 
         //main loop
         while (true) {
-            if (str == "exit") {
+            if (str == "(exit)") {
                 exit_reason = "requested by client";
                 break;
             }
@@ -141,7 +141,7 @@ Connection::Connection(socket_ptr socket) :
                 (*i)->parent_write_command(str);
             }
 
-            if (str == "solve") {
+            if (str == "(check-sat)") {
                 bool solved = false;
                 while (!solved) {
                     for (std::list<SolverProcess*>::iterator i = solvers.begin(); i != solvers.end(); ++i) {
